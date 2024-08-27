@@ -353,7 +353,7 @@ const ProductivityApp = () => {
   };
 
   const getTextColor = (percentage) => {
-    return percentage >= 70 ? 'text-green-700' : 'text-red-700';
+    return percentage >= 70 ? 'text-green-500' : 'text-red-500';
   };
 
   const keyTaskPercentage = Math.round((keyTaskTime / totalTime) * 100) || 0;
@@ -372,6 +372,19 @@ const ProductivityApp = () => {
     });
   };
 
+  const handleDurationChange = useCallback((taskId, newDuration, date) => {
+    setTasks(prevTasks => {
+      const updatedTasks = { ...prevTasks };
+      const dateKey = formatDateKey(date);
+      if (updatedTasks[dateKey]) {
+        updatedTasks[dateKey] = updatedTasks[dateKey].map(task => 
+          task.id === taskId ? { ...task, duration: newDuration } : task
+        );
+      }
+      return updatedTasks;
+    });
+  }, [formatDateKey]);
+
   return (
     <div className="flex h-screen bg-gray-50 text-gray-800">
       <SettingsMenu 
@@ -382,9 +395,6 @@ const ProductivityApp = () => {
       />
       <div className="flex-1 overflow-hidden">
         <div className="p-8">
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center mb-4">
-            Focus on what matters
-          </h1>
           <div className="flex space-x-4 mb-6">
             <div className={`flex items-center p-2 rounded-lg ${getBackgroundColor(keyTaskPercentage)}`}>
               <Target className={`mr-2 ${getTextColor(keyTaskPercentage)}`} size={18} />
@@ -416,6 +426,7 @@ const ProductivityApp = () => {
                     topTags={topTags}
                     tags={tags}
                     onTagChange={handleTagChange}
+                    onDurationChange={handleDurationChange}
                   />
                 ))}
               </div>

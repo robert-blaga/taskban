@@ -17,7 +17,7 @@ const formatDuration = (minutes) => {
   return remainingMinutes ? `${hours}h ${remainingMinutes}m` : `${hours} hour${hours > 1 ? 's' : ''}`;
 };
 
-const DayColumn = ({ day, date, isToday, tasks, onAddTask, onToggleComplete, onDeleteTask, onEditTask, topTags = [], tags = [], onTagChange }) => {
+const DayColumn = ({ day, date, isToday, tasks, onAddTask, onToggleComplete, onDeleteTask, onEditTask, topTags = [], tags = [], onTagChange, onDurationChange }) => {
   const { totalDuration, focusPercentage, totalHours } = useMemo(() => {
     const total = tasks.reduce((sum, task) => sum + task.duration, 0);
     const focus = tasks.reduce((sum, task) => topTags.includes(task.tag) ? sum + task.duration : sum, 0);
@@ -73,13 +73,11 @@ const DayColumn = ({ day, date, isToday, tasks, onAddTask, onToggleComplete, onD
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`p-4 rounded-lg border ${
+            className={`p-4 rounded-lg ${
               snapshot.isDraggingOver
-                ? 'border-gray-400'
-                : isToday
-                ? 'border-gray-100'
-                : 'border-gray-100'
-            } flex flex-col transition-colors duration-200 bg-white shadow-sm h-auto`}
+                ? 'bg-gray-100'
+                : ''
+            } flex flex-col transition-colors duration-200 h-auto`}
           >
             <div className="flex items-center justify-between mb-2">
               <div>
@@ -113,7 +111,7 @@ const DayColumn = ({ day, date, isToday, tasks, onAddTask, onToggleComplete, onD
                 value={newTaskTitle}
                 onChange={(e) => setNewTaskTitle(e.target.value)}
                 placeholder="Add a task..."
-                className="w-full p-2 bg-gray-100 rounded text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                className="w-full p-2 rounded text-gray-800 placeholder-gray-400 focus:outline-none text-sm bg-transparent"
               />
             </form>
 
@@ -129,6 +127,7 @@ const DayColumn = ({ day, date, isToday, tasks, onAddTask, onToggleComplete, onD
                   topTags={topTags}
                   tags={tags}
                   onTagChange={(taskId, newTag) => onTagChange(taskId, newTag, date)}
+                  onDurationChange={(taskId, newDuration) => onDurationChange(taskId, newDuration, date)}
                 />
               ))}
               {provided.placeholder}

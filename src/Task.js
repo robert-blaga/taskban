@@ -2,15 +2,9 @@ import React from 'react';
 import { Draggable } from '@hello-pangea/dnd';
 import { Check, Trash2 } from 'lucide-react';
 import CustomTagDropdown from './CustomTagDropdown';
+import TimeDropdown from './TimeDropdown';
 
-const formatDuration = (minutes) => {
-  if (minutes < 60) return `${minutes} min`;
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-  return remainingMinutes ? `${hours}h ${remainingMinutes}m` : `${hours} hour${hours > 1 ? 's' : ''}`;
-};
-
-const Task = ({ task, index, onToggleComplete, onDelete, onEdit, topTags = [], tags = [], onTagChange }) => (
+const Task = ({ task, index, onToggleComplete, onDelete, onEdit, topTags = [], tags = [], onTagChange, onDurationChange }) => (
   <Draggable draggableId={task.id.toString()} index={index}>
     {(provided) => (
       <div
@@ -38,7 +32,10 @@ const Task = ({ task, index, onToggleComplete, onDelete, onEdit, topTags = [], t
           >
             {task.title}
           </span>
-          <span className="text-xs font-light text-gray-500 ml-4 bg-gray-100 p-1 rounded">{formatDuration(task.duration)}</span>
+          <TimeDropdown
+            value={task.duration}
+            onChange={(newDuration) => onDurationChange(task.id, newDuration)}
+          />
         </div>
         <div className="flex justify-between items-center">
           <button 
