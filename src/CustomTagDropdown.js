@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Target, DollarSign, Bird, Landmark, Clipboard, Plug, FileCode, PiggyBank, Users, PhoneCall, Book, ChevronDown } from 'lucide-react';
+import { Target, DollarSign, Bird, Landmark, Clipboard, Plug, FileCode, PiggyBank, Users, PhoneCall, Book } from 'lucide-react';
 
 const getTagIcon = (tag) => {
   const lowercaseTag = tag.toLowerCase();
@@ -15,7 +15,7 @@ const getTagIcon = (tag) => {
   return <Book size={14} />; // Default icon
 };
 
-const CustomTagDropdown = ({ value, onChange, options, focusTags = [] }) => {
+const CustomTagDropdown = ({ value, onChange, options, focusTags, isFocusTag }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -32,56 +32,38 @@ const CustomTagDropdown = ({ value, onChange, options, focusTags = [] }) => {
     };
   }, []);
 
-  const isInFocus = (tag) => focusTags.includes(tag);
+  const handleChange = (newValue) => {
+    onChange(newValue);
+    setIsOpen(false);
+  };
+
+  const textColorClass = isFocusTag ? 'text-green-500' : 'text-gray-500';
+  const iconColorClass = isFocusTag ? 'text-green-500' : 'text-gray-400';
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      <div
-        className={`cursor-pointer text-xs flex items-center ${
-          isInFocus(value) ? 'text-green-500' : 'text-gray-500'
-        }`}
+    <div className="relative inline-block text-left" ref={dropdownRef}>
+      <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
+        className={`flex items-center space-x-1 text-xs ${textColorClass}`}
       >
-        {value ? (
-          <>
-            {getTagIcon(value)}
-            <span className="ml-1">{value}</span>
-          </>
-        ) : (
-          <>
-            <Target size={14} />
-            <span className="ml-1">No Tag</span>
-          </>
-        )}
-        <ChevronDown size={14} className="ml-1" />
-      </div>
+        <span className={iconColorClass}>{getTagIcon(value)}</span>
+        <span>{value}</span>
+      </button>
+
       {isOpen && (
-        <div className="absolute z-10 mt-1 w-32 bg-white rounded-md shadow-lg">
-          <div className="py-1">
-            <div
-              className="px-4 py-2 text-xs text-gray-700 hover:bg-gray-100 cursor-pointer flex items-center"
-              onClick={() => {
-                onChange('');
-                setIsOpen(false);
-              }}
-            >
-              <Target size={14} className="mr-2" />
-              <span>No Tag</span>
-            </div>
-            {options.map((option) => (
-              <div
-                key={option}
-                className={`px-4 py-2 text-xs hover:bg-gray-100 cursor-pointer flex items-center ${
-                  isInFocus(option) ? 'text-green-500' : 'text-gray-700'
-                }`}
-                onClick={() => {
-                  onChange(option);
-                  setIsOpen(false);
-                }}
+        <div className="fixed mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+          <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+            {options.map((tag) => (
+              <button
+                key={tag}
+                onClick={() => handleChange(tag)}
+                className={`flex items-center px-4 py-2 text-xs ${focusTags.includes(tag) ? 'text-green-500' : 'text-gray-500'} w-full text-left`}
+                role="menuitem"
               >
-                {getTagIcon(option)}
-                <span className="ml-2">{option}</span>
-              </div>
+                <span className={focusTags.includes(tag) ? 'text-green-500' : 'text-gray-500'}>{getTagIcon(tag)}</span>
+                <span className="ml-2">{tag}</span>
+              </button>
             ))}
           </div>
         </div>

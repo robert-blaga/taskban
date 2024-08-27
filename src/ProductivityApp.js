@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { DragDropContext } from '@hello-pangea/dnd';
-import TaskDialog from './TaskDialog';
 import DayColumn from './DayColumn';
 import AITaskInput from './AITaskInput';
 import SettingsMenu from './SettingsMenu';
@@ -38,9 +37,6 @@ const ProductivityApp = () => {
     return stored ? parseInt(stored, 10) : 3;
   });
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [editingTask, setEditingTask] = useState(null);
   const [isAIInputVisible, setIsAIInputVisible] = useState(false);
   
   const scrollContainerRef = useRef(null);
@@ -115,53 +111,23 @@ const ProductivityApp = () => {
     });
   }, []);
 
-  const handleTaskSubmit = useCallback((taskData) => {
-    const dateKey = formatDateKey(selectedDate);
-    setTasks(prev => {
-      const newTasks = { ...prev };
-      if (editingTask) {
-        newTasks[dateKey] = newTasks[dateKey].map(task =>
-          task.id === editingTask.id ? { ...task, ...taskData } : task
-        );
+  const handleEditTask = (taskId, updates, date) => {
+    setTasks(prevTasks => {
+      const newTasks = { ...prevTasks };
+      const formattedDate = formatDateKey(new Date(date));
+      if (!newTasks[formattedDate]) {
+        console.error(`No tasks found for date: ${formattedDate}`);
+        return prevTasks; // Return the previous state unchanged
+      }
+      const taskIndex = newTasks[formattedDate].findIndex(task => task.id === taskId);
+      if (taskIndex !== -1) {
+        newTasks[formattedDate][taskIndex] = { ...newTasks[formattedDate][taskIndex], ...updates };
       } else {
-        if (!newTasks[dateKey]) newTasks[dateKey] = [];
-        newTasks[dateKey].push({ 
-          id: Date.now(), 
-          ...taskData,
-          completed: false
-        });
+        console.error(`Task with id ${taskId} not found for date ${formattedDate}`);
       }
       return newTasks;
     });
-
-    if (taskData.tag && !tags.includes(taskData.tag)) {
-      handleNewTag(taskData.tag);
-    }
-
-    setEditingTask(null);
-    setIsDialogOpen(false);
-  }, [selectedDate, editingTask, formatDateKey, tags, handleNewTag]);
-
-  // eslint-disable-next-line no-unused-vars
-  const getRelevantTasks = useCallback(() => {
-    const today = new Date();
-    const fiveDaysAgo = new Date(today.setDate(today.getDate() - 5));
-    const fiveDaysFromNow = new Date(today.setDate(today.getDate() + 10));
-
-    return Object.entries(tasks).reduce((relevantTasks, [dateKey, dateTasks]) => {
-      const taskDate = new Date(dateKey);
-      if (taskDate >= fiveDaysAgo && taskDate <= fiveDaysFromNow) {
-        relevantTasks[dateKey] = dateTasks.map(task => ({
-          id: task.id,
-          title: task.title,
-          duration: task.duration,
-          tag: task.tag,
-          completed: task.completed
-        }));
-      }
-      return relevantTasks;
-    }, {});
-  }, [tasks]);
+  };
 
   const toggleTaskCompletion = useCallback((taskId, date) => {
     const dateKey = formatDateKey(date);
@@ -183,12 +149,6 @@ const ProductivityApp = () => {
       [dateKey]: prev[dateKey].filter(task => task.id !== taskId)
     }));
   }, [formatDateKey]);
-
-  const editTask = useCallback((task, date) => {
-    setEditingTask(task);
-    setSelectedDate(date);
-    setIsDialogOpen(true);
-  }, []);
 
   const rescheduleTask = useCallback((taskId, newDate) => {
     setTasks(prev => {
@@ -232,7 +192,6 @@ const ProductivityApp = () => {
     });
   }, []);
 
-  // eslint-disable-next-line no-unused-vars
   const handleAITaskCreation = useCallback((taskData) => {
     const dateKey = formatDateKey(taskData.date);
     setTasks(prev => ({
@@ -422,7 +381,7 @@ const ProductivityApp = () => {
                     onAddTask={handleAddTask}
                     onToggleComplete={toggleTaskCompletion}
                     onDeleteTask={deleteTask}
-                    onEditTask={editTask}
+                    onEditTask={handleEditTask}
                     topTags={topTags}
                     tags={tags}
                     onTagChange={handleTagChange}
@@ -432,17 +391,6 @@ const ProductivityApp = () => {
               </div>
             </div>
           </DragDropContext>
-          <TaskDialog
-            isOpen={isDialogOpen}
-            onClose={() => {
-              setIsDialogOpen(false);
-              setEditingTask(null);
-            }}
-            onSubmit={handleTaskSubmit}
-            initialTask={editingTask}
-            tags={tags}
-            onNewTag={handleNewTag}
-          />
           <AITaskInput
             onTaskCreation={handleAddTask}
             onTaskCompletion={handleAITaskCompletion}

@@ -66,75 +66,80 @@ const DayColumn = ({ day, date, isToday, tasks, onAddTask, onToggleComplete, onD
     }
   };
 
+  const handleEditTask = (taskId, updates) => {
+    onEditTask(taskId, updates, date.toISOString());
+  };
+
   return (
-    <div className="flex-shrink-0 w-64">
-      <Droppable droppableId={date.toISOString()}>
-        {(provided, snapshot) => (
+    <div className="flex-shrink-0 w-64 flex flex-col h-full">
+      <div className="p-4 rounded-lg flex flex-col h-full">
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <h2 className={`text-lg font-bold ${isToday ? 'text-gray-900' : 'text-gray-700'}`}>
+              {day}
+            </h2>
+            <p className="text-xs font-light text-gray-500">{formatDate(date)}</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-between mb-3">
+          <span className={`text-xs font-medium ${getTotalTimeColor(totalHours)}`}>
+            {formatDuration(totalDuration)}
+            {totalHours > 9 && <span className="font-bold ml-1">!</span>}
+          </span>
+          <span className={`text-xs font-medium p-1 rounded ${getFocusColor(focusPercentage)}`}>
+            {focusPercentage}% Focus
+          </span>
+        </div>
+
+        {/* Progress bar */}
+        <div className="w-full h-2 bg-gray-200 rounded-full mb-3">
           <div
-            ref={provided.innerRef}
-            {...provided.droppableProps}
-            className={`p-4 rounded-lg ${
-              snapshot.isDraggingOver
-                ? 'bg-gray-100'
-                : ''
-            } flex flex-col transition-colors duration-200 h-auto`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <h2 className={`text-lg font-bold ${isToday ? 'text-gray-900' : 'text-gray-700'}`}>
-                  {day}
-                </h2>
-                <p className="text-xs font-light text-gray-500">{formatDate(date)}</p>
+            className="h-full bg-gray-600 rounded-full transition-all duration-300 ease-in-out"
+            style={{ width: `${progressPercentage}%` }}
+          ></div>
+        </div>
+
+        <form onSubmit={handleAddTask} className="mb-3">
+          <input
+            type="text"
+            value={newTaskTitle}
+            onChange={(e) => setNewTaskTitle(e.target.value)}
+            placeholder="Add a task..."
+            className="w-full p-2 rounded text-gray-800 placeholder-gray-400 focus:outline-none text-sm bg-transparent"
+          />
+        </form>
+
+        <Droppable droppableId={date.toISOString()}>
+          {(provided, snapshot) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className={`flex-grow overflow-y-auto ${
+                snapshot.isDraggingOver ? 'bg-gray-100' : ''
+              }`}
+              style={{ maxHeight: 'calc(100vh - 280px)' }} // Increased from 250px to 280px
+            >
+              <div className="pb-6"> {/* Added padding-bottom */}
+                {sortedTasks.map((task, index) => (
+                  <Task
+                    key={task.id}
+                    task={task}
+                    index={index}
+                    onToggleComplete={() => onToggleComplete(task.id, date)}
+                    onDelete={() => onDeleteTask(task.id, date)}
+                    onEdit={handleEditTask}
+                    topTags={topTags}
+                    tags={tags}
+                    onTagChange={(taskId, newTag) => onTagChange(taskId, newTag, date)}
+                    onDurationChange={(taskId, newDuration) => onDurationChange(taskId, newDuration, date)}
+                  />
+                ))}
+                {provided.placeholder}
               </div>
             </div>
-            <div className="flex items-center justify-between mb-3">
-              <span className={`text-xs font-medium ${getTotalTimeColor(totalHours)}`}>
-                {formatDuration(totalDuration)}
-                {totalHours > 9 && <span className="font-bold ml-1">!</span>}
-              </span>
-              <span className={`text-xs font-medium p-1 rounded ${getFocusColor(focusPercentage)}`}>
-                {focusPercentage}% Focus
-              </span>
-            </div>
-
-            {/* Progress bar */}
-            <div className="w-full h-2 bg-gray-200 rounded-full mb-3">
-              <div
-                className="h-full bg-gray-600 rounded-full transition-all duration-300 ease-in-out"
-                style={{ width: `${progressPercentage}%` }}
-              ></div>
-            </div>
-
-            <form onSubmit={handleAddTask} className="mb-3">
-              <input
-                type="text"
-                value={newTaskTitle}
-                onChange={(e) => setNewTaskTitle(e.target.value)}
-                placeholder="Add a task..."
-                className="w-full p-2 rounded text-gray-800 placeholder-gray-400 focus:outline-none text-sm bg-transparent"
-              />
-            </form>
-
-            <div>
-              {sortedTasks.map((task, index) => (
-                <Task
-                  key={task.id}
-                  task={task}
-                  index={index}
-                  onToggleComplete={() => onToggleComplete(task.id, date)}
-                  onDelete={() => onDeleteTask(task.id, date)}
-                  onEdit={() => onEditTask(task, date)}
-                  topTags={topTags}
-                  tags={tags}
-                  onTagChange={(taskId, newTag) => onTagChange(taskId, newTag, date)}
-                  onDurationChange={(taskId, newDuration) => onDurationChange(taskId, newDuration, date)}
-                />
-              ))}
-              {provided.placeholder}
-            </div>
-          </div>
-        )}
-      </Droppable>
+          )}
+        </Droppable>
+      </div>
     </div>
   );
 };
