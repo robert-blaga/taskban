@@ -359,6 +359,19 @@ const ProductivityApp = () => {
   const keyTaskPercentage = Math.round((keyTaskTime / totalTime) * 100) || 0;
   const filledPercentage = Math.round((filledTime / (40 * 60)) * 100) || 0;
 
+  const handleTagChange = (taskId, newTag, date) => {
+    setTasks(prevTasks => {
+      const updatedTasks = { ...prevTasks };
+      const dateKey = formatDateKey(date);
+      if (updatedTasks[dateKey]) {
+        updatedTasks[dateKey] = updatedTasks[dateKey].map(task => 
+          task.id === taskId ? { ...task, tag: newTag } : task
+        );
+      }
+      return updatedTasks;
+    });
+  };
+
   return (
     <div className="flex h-screen bg-gray-50 text-gray-800">
       <SettingsMenu 
@@ -401,6 +414,8 @@ const ProductivityApp = () => {
                     onDeleteTask={deleteTask}
                     onEditTask={editTask}
                     topTags={topTags}
+                    tags={tags}
+                    onTagChange={handleTagChange}
                   />
                 ))}
               </div>

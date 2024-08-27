@@ -1,6 +1,7 @@
 import React from 'react';
-import { Check, Trash2 } from 'lucide-react';
 import { Draggable } from '@hello-pangea/dnd';
+import { Check, Trash2 } from 'lucide-react';
+import CustomTagDropdown from './CustomTagDropdown';
 
 const formatDuration = (minutes) => {
   if (minutes < 60) return `${minutes} min`;
@@ -9,7 +10,7 @@ const formatDuration = (minutes) => {
   return remainingMinutes ? `${hours}h ${remainingMinutes}m` : `${hours} hour${hours > 1 ? 's' : ''}`;
 };
 
-const Task = ({ task, index, onToggleComplete, onDelete, onEdit, topTags = [] }) => (
+const Task = ({ task, index, onToggleComplete, onDelete, onEdit, topTags = [], tags = [], onTagChange }) => (
   <Draggable draggableId={task.id.toString()} index={index}>
     {(provided) => (
       <div
@@ -18,10 +19,18 @@ const Task = ({ task, index, onToggleComplete, onDelete, onEdit, topTags = [] })
         {...provided.dragHandleProps}
         className={`group rounded-lg p-3 mb-2 transition-all duration-200 ${
           task.completed 
-            ? 'bg-gray-100 blur-[2px] hover:blur-none' 
+            ? 'bg-gray-100 blur-[0.5px] hover:blur-none' 
             : 'bg-white hover:bg-gray-50'
         } border border-gray-100`}
       >
+        <div className="mb-1 flex items-center">
+          <CustomTagDropdown
+            value={task.tag || ''}
+            onChange={(newTag) => onTagChange(task.id, newTag)}
+            options={tags}
+            focusTags={topTags}
+          />
+        </div>
         <div className="flex justify-between items-start mb-2">
           <span 
             className={`text-sm font-bold flex-grow ${task.completed ? 'text-gray-400 line-through' : 'text-gray-700'}`}
@@ -51,13 +60,6 @@ const Task = ({ task, index, onToggleComplete, onDelete, onEdit, topTags = [] })
             </button>
           </div>
         </div>
-        {task.tag && (
-          <span className={`text-xs mt-1 inline-block ${
-            (topTags && topTags.includes(typeof task.tag === 'string' ? task.tag : task.tag.name)) ? 'text-green-500 font-medium' : 'text-gray-500'
-          }`}>
-            #{typeof task.tag === 'string' ? task.tag : task.tag.name}
-          </span>
-        )}
       </div>
     )}
   </Draggable>

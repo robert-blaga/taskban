@@ -1,7 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { Plus } from 'lucide-react';
 import { Droppable } from '@hello-pangea/dnd';
 import Task from './Task';
+
+// Remove these lines if they exist:
+// import { Plus } from 'lucide-react';
+// import CustomDropdown from './CustomDropdown';
 
 const formatDate = (date) => {
   return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
@@ -14,9 +17,7 @@ const formatDuration = (minutes) => {
   return remainingMinutes ? `${hours}h ${remainingMinutes}m` : `${hours} hour${hours > 1 ? 's' : ''}`;
 };
 
-const DayColumn = ({ day, date, isToday, tasks, onAddTask, onToggleComplete, onDeleteTask, onEditTask, topTags }) => {
-  const [newTaskTitle, setNewTaskTitle] = useState('');
-
+const DayColumn = ({ day, date, isToday, tasks, onAddTask, onToggleComplete, onDeleteTask, onEditTask, topTags = [], tags = [], onTagChange }) => {
   const { totalDuration, focusPercentage, totalHours } = useMemo(() => {
     const total = tasks.reduce((sum, task) => sum + task.duration, 0);
     const focus = tasks.reduce((sum, task) => topTags.includes(task.tag) ? sum + task.duration : sum, 0);
@@ -29,21 +30,14 @@ const DayColumn = ({ day, date, isToday, tasks, onAddTask, onToggleComplete, onD
   }, [tasks, topTags]);
 
   const getTotalTimeColor = (hours) => {
-    if (hours < 6) return 'text-red-600';
-    if (hours > 9) return 'text-red-600';
+    if (hours < 6) return 'text-red-500';
+    if (hours > 9) return 'text-red-500';
     return 'text-green-600';
   };
 
   const getFocusColor = (percentage) => {
-    if (percentage >= 70) return 'bg-green-100 text-green-800';
-    return 'bg-red-100 text-red-800';
-  };
-
-  const handleAddTask = (e) => {
-    if (e.key === 'Enter' && newTaskTitle.trim()) {
-      onAddTask(date, { title: newTaskTitle.trim(), duration: 30 });
-      setNewTaskTitle('');
-    }
+    if (percentage >= 70) return 'bg-green-100 text-green-500';
+    return 'bg-red-100 text-red-400';
   };
 
   // Sort tasks: incomplete first, then completed
@@ -56,6 +50,21 @@ const DayColumn = ({ day, date, isToday, tasks, onAddTask, onToggleComplete, onD
   const completedTasks = tasks.filter(task => task.completed).length;
   const totalTasks = tasks.length;
   const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+
+  const handleAddTask = (e) => {
+    e.preventDefault();
+    if (newTaskTitle.trim()) {
+      onAddTask(date, {
+        title: newTaskTitle.trim(),
+        tag: 'N/A',
+        duration: 30,
+        completed: false
+      });
+      setNewTaskTitle('');
+    }
+  };
 
   return (
     <div className="flex-shrink-0 w-64">
@@ -79,13 +88,6 @@ const DayColumn = ({ day, date, isToday, tasks, onAddTask, onToggleComplete, onD
                 </h2>
                 <p className="text-xs font-light text-gray-500">{formatDate(date)}</p>
               </div>
-              <button
-                onClick={() => onAddTask(date)}
-                className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
-                aria-label="Add new"
-              >
-                <Plus size={16} />
-              </button>
             </div>
             <div className="flex items-center justify-between mb-3">
               <span className={`text-xs font-medium ${getTotalTimeColor(totalHours)}`}>
@@ -105,14 +107,16 @@ const DayColumn = ({ day, date, isToday, tasks, onAddTask, onToggleComplete, onD
               ></div>
             </div>
 
-            <input
-              type="text"
-              value={newTaskTitle}
-              onChange={(e) => setNewTaskTitle(e.target.value)}
-              onKeyPress={handleAddTask}
-              placeholder="Add a new task"
-              className="w-full p-2 mb-3 bg-transparent rounded text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200 text-sm"
-            />
+            <form onSubmit={handleAddTask} className="mb-3">
+              <input
+                type="text"
+                value={newTaskTitle}
+                onChange={(e) => setNewTaskTitle(e.target.value)}
+                placeholder="Add a task..."
+                className="w-full p-2 bg-gray-100 rounded text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+              />
+            </form>
+
             <div>
               {sortedTasks.map((task, index) => (
                 <Task
@@ -123,6 +127,8 @@ const DayColumn = ({ day, date, isToday, tasks, onAddTask, onToggleComplete, onD
                   onDelete={() => onDeleteTask(task.id, date)}
                   onEdit={() => onEditTask(task, date)}
                   topTags={topTags}
+                  tags={tags}
+                  onTagChange={(taskId, newTag) => onTagChange(taskId, newTag, date)}
                 />
               ))}
               {provided.placeholder}
