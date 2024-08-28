@@ -3,6 +3,7 @@ import { DragDropContext } from '@hello-pangea/dnd';
 import DayColumn from './DayColumn';
 import AITaskInput from './AITaskInput';
 import SettingsMenu from './SettingsMenu';
+import Block from './Block';
 import { Target, Clock } from 'lucide-react';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -345,7 +346,7 @@ const ProductivityApp = () => {
   }, [formatDateKey]);
 
   return (
-    <div className="flex h-screen bg-gray-50 text-gray-800">
+    <div className="flex h-screen bg-white text-gray-800">
       <SettingsMenu 
         onTagsChange={handleTagsChange} 
         initialTags={tags}
@@ -406,6 +407,7 @@ const ProductivityApp = () => {
           />
         </div>
       </div>
+      <Block />
     </div>
   );
 };

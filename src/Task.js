@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Draggable } from '@hello-pangea/dnd';
-import { Check, StickyNote, Trash2 } from 'lucide-react';
+import { Check, NotepadText, Trash2 } from 'lucide-react';
 import CustomTagDropdown from './CustomTagDropdown';
 import TimeDropdown from './TimeDropdown';
 import NoteModal from './NoteModal';
@@ -85,7 +85,7 @@ const Task = ({ task, index, onToggleComplete, onDelete, onEdit, topTags = [], t
           className={`group rounded-lg p-3 mb-2 transition-all duration-200 ${
             task.completed 
               ? 'bg-gray-100 blur-[0.5px] hover:blur-none' 
-              : 'bg-white'
+              : 'bg-gray-50'
           } border hover:border-gray-300 ${
             task.completed ? 'border-gray-100' : 'border-gray-100'
           }`}
@@ -136,13 +136,13 @@ const Task = ({ task, index, onToggleComplete, onDelete, onEdit, topTags = [], t
                       : 'border-gray-300 text-gray-300 hover:border-gray-500 hover:text-gray-500'
                   }`}
                 >
-                  <Check size={12} />
+                  <notepad-text size={12} />
                 </button>
                 <button
                   onClick={() => setIsNoteModalOpen(true)}
                   className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
                 >
-                  <StickyNote size={16} />
+                  <NotepadText size={16} />
                 </button>
               </div>
               <CustomTagDropdown
@@ -157,8 +157,16 @@ const Task = ({ task, index, onToggleComplete, onDelete, onEdit, topTags = [], t
           <NoteModal
             isOpen={isNoteModalOpen}
             onClose={() => setIsNoteModalOpen(false)}
-            onSave={handleSaveNote}
+            onSave={(updatedTask) => onEdit(task.id, updatedTask)}
             initialNote={task.note}
+            task={{
+              ...task,
+              createdAt: task.createdAt || new Date().toISOString(), // Ensure createdAt is available
+            }}
+            tags={tags}
+            topTags={topTags}
+            onTagChange={onTagChange}
+            onDurationChange={onDurationChange}
           />
           {showContextMenu && (
             <div

@@ -1,0 +1,34 @@
+.custom-editor-container {
+  padding-left: 1px;
+  background-color: #ffffff; /* White background */
+}
+
+.custom-editor-container .bn-editor {
+  background-color: #ffffff !important; /* White background */
+  color: #000000 !important; /* Black font */
+  font-size: 12px !important; /* Smaller font size */
+  padding-left: 0px !important; /* Add a small padding for better readability */
+  width: 100% !important;
+}
+
+.custom-editor-container .bn-editor .bn-inline-content {
+  background-color: #ffffff !important; /* White background for inline content */
+  color: #000000 !important; /* Black font for inline content */
+  font-size: 12px !important; /* Smaller font size for inline content */
+}
+
+/* Remove all side menu related styles */
+.custom-editor-container .bn-side-menu,
+.custom-editor-container .bn-drag-handle-menu,
+.bn-drag-handle-menu {
+  display: none !important;
+}
+
+/* Ensure the content aligns properly */
+.custom-editor-container .bn-editor .bn-content {
+  margin-left: 0 !important;
+}
+
+.aligned-editor {
+  padding-left: 0px; /* Adjust this value as needed */
+}

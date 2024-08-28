@@ -198,15 +198,15 @@ const SettingsMenu = ({ onTagsChange, initialTags, numFocusAreas, onNumFocusArea
   );
 
   return (
-    <div className="h-full bg-[#F6F7FA] text-[#6B6B83] shadow-lg w-64 overflow-y-auto">
+    <div className="h-full bg-[#F9F9F9] text-[#6B6B83] border-r border-gray-300 w-64 overflow-y-auto">
       <div className="p-4">
         <div className="mb-4">
-          <h3 className="text-[10px] mb-4 tracking-wider font-normal text-gray-500 uppercase">Focus</h3>
+          <h3 className="text-[10px] mb-4 tracking-wider font-normal text-gray-500 uppercase">PRIORITIES</h3>
           
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="tags" type="TAG">
               {(provided) => (
-                <ul {...provided.droppableProps} ref={provided.innerRef} className="text-sm pl-8 mt-4">
+                <ul {...provided.droppableProps} ref={provided.innerRef} className="text-sm">
                   {tags.map((tag, index) => (
                     <React.Fragment key={tag}>
                       {renderTag(tag, index)}
@@ -217,7 +217,7 @@ const SettingsMenu = ({ onTagsChange, initialTags, numFocusAreas, onNumFocusArea
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              className="my-4 border-t border-gray-300 pt-4 cursor-move"
+                              className="my-4 border-t border-gray-300 pt-4 cursor-move -mx-4"
                             >
                             </li>
                           )}
