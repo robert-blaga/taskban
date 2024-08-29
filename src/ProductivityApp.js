@@ -4,7 +4,8 @@ import DayColumn from './DayColumn';
 import AITaskInput from './AITaskInput';
 import SettingsMenu from './SettingsMenu';
 import Block from './Block';
-import { Target, Clock } from 'lucide-react';
+import { Target, Clock, CalendarDays } from 'lucide-react';
+import { animated, useSpring } from 'react-spring';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -42,12 +43,17 @@ const ProductivityApp = () => {
   
   const scrollContainerRef = useRef(null);
 
-  const today = new Date();
-  const weekDates = [...Array(7)].map((_, index) => {
-    const date = new Date(today);
-    date.setDate(today.getDate() + index);
-    return date;
+  const [weekDates, setWeekDates] = useState(() => {
+    const today = new Date();
+    return [...Array(14)].map((_, index) => {
+      const date = new Date(today);
+      date.setDate(today.getDate() - 7 + index);
+      return date;
+    });
   });
+
+  const [isLoadingPrev, setIsLoadingPrev] = useState(false);
+  const [isLoadingNext, setIsLoadingNext] = useState(false);
 
   const formatDateKey = useCallback((date) => date.toISOString().split('T')[0], []);
 
@@ -345,6 +351,85 @@ const ProductivityApp = () => {
     });
   }, [formatDateKey]);
 
+  const scrollToToday = useCallback(() => {
+    if (scrollContainerRef.current) {
+      const today = new Date();
+      const todayIndex = weekDates.findIndex(date => 
+        date.getDate() === today.getDate() &&
+        date.getMonth() === today.getMonth() &&
+        date.getFullYear() === today.getFullYear()
+      );
+      
+      if (todayIndex !== -1) {
+        const dayWidth = scrollContainerRef.current.scrollWidth / weekDates.length;
+        const scrollPosition = dayWidth * todayIndex;
+        scrollContainerRef.current.scrollLeft = scrollPosition;
+      } else {
+        // If today is not in the current range, reset the weekDates
+        const newWeekDates = [...Array(14)].map((_, index) => {
+          const date = new Date(today);
+          date.setDate(today.getDate() - 7 + index);
+          return date;
+        });
+        setWeekDates(newWeekDates);
+        // Scroll after the state has been updated
+        setTimeout(() => {
+          if (scrollContainerRef.current) {
+            const dayWidth = scrollContainerRef.current.scrollWidth / 14;
+            const scrollPosition = dayWidth * 7; // 7 days before today
+            scrollContainerRef.current.scrollLeft = scrollPosition;
+          }
+        }, 0);
+      }
+    }
+  }, [weekDates]);
+
+  const handleScroll = useCallback(() => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      
+      if (scrollLeft === 0 && !isLoadingPrev) {
+        setIsLoadingPrev(true);
+        const newWeek = [...Array(7)].map((_, index) => {
+          const date = new Date(weekDates[0]);
+          date.setDate(date.getDate() - 7 + index);
+          return date;
+        });
+        setWeekDates(prev => [...newWeek, ...prev]);
+        setTimeout(() => setIsLoadingPrev(false), 500);
+      }
+
+      if (scrollLeft + clientWidth >= scrollWidth - 10 && !isLoadingNext) {
+        setIsLoadingNext(true);
+        const newWeek = [...Array(7)].map((_, index) => {
+          const date = new Date(weekDates[weekDates.length - 1]);
+          date.setDate(date.getDate() + 1 + index);
+          return date;
+        });
+        setWeekDates(prev => [...prev, ...newWeek]);
+        setTimeout(() => setIsLoadingNext(false), 500);
+      }
+    }
+  }, [weekDates, isLoadingPrev, isLoadingNext]);
+
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll);
+      return () => scrollContainer.removeEventListener('scroll', handleScroll);
+    }
+  }, [handleScroll]);
+
+  const fadeInProps = useSpring({
+    opacity: 1,
+    from: { opacity: 0 },
+    config: { duration: 300 },
+  });
+
+  useEffect(() => {
+    scrollToToday();
+  }, [scrollToToday]);
+
   return (
     <div className="flex h-screen bg-white text-gray-800">
       <SettingsMenu 
@@ -353,9 +438,19 @@ const ProductivityApp = () => {
         numFocusAreas={numFocusAreas}
         onNumFocusAreasChange={handleNumFocusAreasChange}
       />
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden flex flex-col">
         <div className="p-8">
-          <div className="flex space-x-4 mb-6">
+          <div className="flex space-x-4 mb-6 items-center">
+            <button
+              onClick={scrollToToday}
+              className="flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              <CalendarDays className="mr-2" size={18} />
+              Today
+            </button>
+            <div className="text-sm font-medium text-gray-500">
+              {formatDateKey(new Date())}
+            </div>
             <div className={`flex items-center p-2 rounded-lg ${getBackgroundColor(keyTaskPercentage)}`}>
               <Target className={`mr-2 ${getTextColor(keyTaskPercentage)}`} size={18} />
               <span className={`font-semibold ${getTextColor(keyTaskPercentage)}`}>
@@ -369,43 +464,46 @@ const ProductivityApp = () => {
               </span>
             </div>
           </div>
-          <DragDropContext onDragEnd={onDragEnd}>
-            <div className="overflow-x-auto" ref={scrollContainerRef}>
-              <div className="flex pb-4 space-x-4" style={{ width: 'calc(100vw - 16rem)' }}>
+        </div>
+        <DragDropContext onDragEnd={onDragEnd}>
+          <div className="flex-1 overflow-x-auto" ref={scrollContainerRef}>
+            <div className="h-full">
+              <div className="flex pb-4 space-x-4 h-full" style={{ width: `calc(${weekDates.length / 7 * 100}vw - 32rem)` }}>
                 {weekDates.map((date, index) => (
-                  <DayColumn
-                    key={formatDateKey(date)}
-                    day={DAYS[date.getDay()]}
-                    date={date}
-                    isToday={index === 0}
-                    tasks={tasks[formatDateKey(date)] || []}
-                    onAddTask={handleAddTask}
-                    onToggleComplete={toggleTaskCompletion}
-                    onDeleteTask={deleteTask}
-                    onEditTask={handleEditTask}
-                    topTags={topTags}
-                    tags={tags}
-                    onTagChange={handleTagChange}
-                    onDurationChange={handleDurationChange}
-                  />
+                  <animated.div key={formatDateKey(date)} style={index < 7 || index >= weekDates.length - 7 ? fadeInProps : {}} className="h-full">
+                    <DayColumn
+                      day={DAYS[date.getDay()]}
+                      date={date}
+                      isToday={formatDateKey(date) === formatDateKey(new Date())}
+                      tasks={tasks[formatDateKey(date)] || []}
+                      onAddTask={handleAddTask}
+                      onToggleComplete={toggleTaskCompletion}
+                      onDeleteTask={deleteTask}
+                      onEditTask={handleEditTask}
+                      topTags={topTags}
+                      tags={tags}
+                      onTagChange={handleTagChange}
+                      onDurationChange={handleDurationChange}
+                    />
+                  </animated.div>
                 ))}
               </div>
             </div>
-          </DragDropContext>
-          <AITaskInput
-            onTaskCreation={handleAddTask}
-            onTaskCompletion={handleAITaskCompletion}
-            onTaskUncompletion={handleAITaskUncompletion}
-            onTaskReschedule={rescheduleTask}
-            onTaskModification={modifyTask}
-            isVisible={isAIInputVisible}
-            onClose={() => setIsAIInputVisible(false)}
-            relevantTasks={Object.values(tasks).flat()}
-            currentDate={new Date().toISOString().split('T')[0]}
-            tags={tags}
-            onNewTag={handleNewTag}
-          />
-        </div>
+          </div>
+        </DragDropContext>
+        <AITaskInput
+          onTaskCreation={handleAddTask}
+          onTaskCompletion={handleAITaskCompletion}
+          onTaskUncompletion={handleAITaskUncompletion}
+          onTaskReschedule={rescheduleTask}
+          onTaskModification={modifyTask}
+          isVisible={isAIInputVisible}
+          onClose={() => setIsAIInputVisible(false)}
+          relevantTasks={Object.values(tasks).flat()}
+          currentDate={new Date().toISOString().split('T')[0]}
+          tags={tags}
+          onNewTag={handleNewTag}
+        />
       </div>
       <Block />
     </div>

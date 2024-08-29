@@ -117,9 +117,8 @@ const DayColumn = ({ day, date, isToday, tasks, onAddTask, onToggleComplete, onD
               className={`flex-grow overflow-y-auto ${
                 snapshot.isDraggingOver ? 'bg-gray-100' : ''
               }`}
-              style={{ maxHeight: 'calc(100vh - 280px)' }} // Increased from 250px to 280px
             >
-              <div className="pb-6"> {/* Added padding-bottom */}
+              <div className="pb-6">
                 {sortedTasks.map((task, index) => (
                   <Task
                     key={task.id}

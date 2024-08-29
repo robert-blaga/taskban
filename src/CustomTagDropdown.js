@@ -45,20 +45,20 @@ const CustomTagDropdown = ({ value, onChange, options, focusTags, isFocusTag }) 
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center space-x-1 text-xs ${textColorClass}`}
+        className={`flex items-center space-x-1 text-xs ${textColorClass} hover:bg-gray-100 rounded p-1`}
       >
         <span className={iconColorClass}>{getTagIcon(value)}</span>
         <span>{value}</span>
       </button>
 
       {isOpen && (
-        <div className="fixed mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+        <div className="absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
           <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
             {options.map((tag) => (
               <button
                 key={tag}
                 onClick={() => handleChange(tag)}
-                className={`flex items-center px-4 py-2 text-xs ${focusTags.includes(tag) ? 'text-green-500' : 'text-gray-500'} w-full text-left`}
+                className={`flex items-center px-4 py-2 text-xs ${focusTags.includes(tag) ? 'text-green-500' : 'text-gray-500'} w-full text-left hover:bg-gray-100`}
                 role="menuitem"
               >
                 <span className={focusTags.includes(tag) ? 'text-green-500' : 'text-gray-500'}>{getTagIcon(tag)}</span>
