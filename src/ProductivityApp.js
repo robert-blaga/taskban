@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { DragDropContext } from '@hello-pangea/dnd';
 import DayColumn from './DayColumn';
-import AITaskInput from './AITaskInput';
 import SettingsMenu from './SettingsMenu';
 import Block from './Block';
 import { Target, Clock, CalendarDays } from 'lucide-react';
@@ -491,19 +490,6 @@ const ProductivityApp = () => {
             </div>
           </div>
         </DragDropContext>
-        <AITaskInput
-          onTaskCreation={handleAddTask}
-          onTaskCompletion={handleAITaskCompletion}
-          onTaskUncompletion={handleAITaskUncompletion}
-          onTaskReschedule={rescheduleTask}
-          onTaskModification={modifyTask}
-          isVisible={isAIInputVisible}
-          onClose={() => setIsAIInputVisible(false)}
-          relevantTasks={Object.values(tasks).flat()}
-          currentDate={new Date().toISOString().split('T')[0]}
-          tags={tags}
-          onNewTag={handleNewTag}
-        />
       </div>
       <Block />
     </div>
