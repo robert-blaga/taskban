@@ -442,7 +442,7 @@ const ProductivityApp = () => {
           <div className="flex space-x-4 mb-6 items-center">
             <button
               onClick={scrollToToday}
-              className="flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              className="flex items-center px-3 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-600 transition-colors"
             >
               <CalendarDays className="mr-2" size={18} />
               Today
